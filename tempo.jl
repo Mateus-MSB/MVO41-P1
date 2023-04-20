@@ -77,15 +77,12 @@ function get_anomaly(t::Real,a::Real,e::Real)
     else
         n = sqrt(μ/a^3)
         Mh = n*t
-        @show Mh
 
         G(F) = e*sinh(F) - F - Mh
 
         F = find_zero(G,0)
-        @show F
         ν = 2 * atand(tanh(F/2)*sqrt((e+1)/(e-1)))
         
-        @show ν
         if (ν<0)
             ν = 360 + ν
         end
