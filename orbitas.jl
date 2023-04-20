@@ -5,7 +5,7 @@ Re = 6_378 # km
 μ = 398_600 # km3 / s2
 
 # Estrutura
-struct Orbita
+mutable struct Orbita
     a::Float64
     e::Float64
     i::Float64
@@ -56,6 +56,21 @@ function get_elements_from_rv(R::Vector,V::Vector)
     show_orbit_elements(orbit)
     
     return orbit
+end
+
+function get_radial_from_elements(orbit::Orbita)
+    a = orbit.a
+    e = orbit.e
+    ν = orbit.ν
+    
+    h = sqrt(μ*a*(1-e^2))
+    p = a*(1-e^2)
+
+    r = p/(1+e*cosd(ν))
+
+    vr,vθ = μ/h*[e*sind(ν),(1+e*cosd(ν))]
+
+    return r,vr,vθ
 end
 
 function get_perifocal_from_elements(a,e,ν)
