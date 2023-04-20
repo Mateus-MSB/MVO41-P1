@@ -4,7 +4,7 @@ include("rotacoes.jl")
 Re = 6_378 # km
 μ = 398_600 # km3 / s2
 
-# Estrutura
+# Estruturas
 mutable struct Orbita
     a::Float64
     e::Float64
@@ -12,6 +12,13 @@ mutable struct Orbita
     ω::Float64
     Ω::Float64
     ν::Float64
+end
+
+mutable struct OrbitaVetores
+    h::Vector
+    B::Vector
+    e::Vector
+    N::Vector
 end
 
 # Bases
@@ -23,15 +30,30 @@ using LinearAlgebra
 unit(vetor) = vetor/norm(vetor) # vetor unitario
 
 # Metodos
-function get_elements_from_rv(R::Vector,V::Vector)
+function get_vectors_from_rv(R::Vector,V::Vector)
     r = norm(R)
-    v = norm(V)
-    
+
     h = cross(R,V)
-    ϵ = v^2/2 - μ/r
     B = cross(V,h) - μ/r * R
     e_vec = B/μ
     N = cross(k,h)
+    
+    orbit = OrbitaVetores(h,B,e_vec,N) 
+    show_orbit_elements(orbit)
+
+    return orbit
+end
+
+function get_elements_from_rv(R::Vector,V::Vector)
+    r = norm(R)
+    v = norm(V)
+    ϵ = v^2/2 - μ/r
+
+    vetores = get_vectors_from_rv(R,V)
+    h = vetores.h
+    B = vetores.B
+    e_vec = vetores.e
+    N = vetores.N
 
     a = -μ/2ϵ
     e = norm(e_vec)
@@ -64,7 +86,7 @@ function get_radial_from_elements(orbit::Orbita)
     ν = orbit.ν
     
     h = sqrt(μ*a*(1-e^2))
-    p = a*(1-e^2)
+    p = a*abs(1-e^2)
 
     r = p/(1+e*cosd(ν))
 
@@ -74,7 +96,7 @@ function get_radial_from_elements(orbit::Orbita)
 end
 
 function get_perifocal_from_elements(a,e,ν)
-    p = a*(1-e^2)
+    p = a*abs(1-e^2)
     r = p/(1+e*cosd(ν))
 
     R = [r*cosd(ν);r*sind(ν);0]
@@ -126,6 +148,12 @@ function show_orbit_elements(orbit::Orbita)
     println("i: ",orbit.i)
     println("ω: ",orbit.ω)
     println("Ω: ",orbit.Ω)
-    println("ν: ",orbit.ν)
+    println("ν: ",orbit.ν,"\n")
 end
 
+function show_orbit_elements(orbit::OrbitaVetores)
+    println("h: ",orbit.h)
+    println("B: ",orbit.B)
+    println("e: ",orbit.e)
+    println("N: ",orbit.N,"\n")
+end
